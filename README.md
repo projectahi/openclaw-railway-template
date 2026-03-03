@@ -201,7 +201,7 @@ Same project, different names over time. Moltbot → Clawdbot → OpenClaw is th
 - OpenAI GPT: ~$5-40/month depending on model
 - Google Gemini: Often free for personal use
 
-### Is my data private?
+### Is my data private and secure on OpenClaw?
 
 Yes. OpenClaw is self-hosted — all data stays on your Railway instance. API keys are stored encrypted in your volume. Traffic is HTTPS.
 
@@ -213,7 +213,7 @@ Yes. Go to `/setup`, change the provider and API key in the config, and click **
 
 Yes. The web UI at your Railway URL is fully functional on its own. Channels are optional.
 
-### How do I access it from my phone?
+### How do I access OpenClaw from my phone?
 
 Visit your Railway URL in a mobile browser, or use the Telegram/Discord/Slack apps if you've set up those channels.
 
@@ -223,7 +223,7 @@ Yes — deploy the template multiple times on Railway. Each gets its own domain,
 
 ### Can I migrate off Railway?
 
-Yes. Go to `/setup` → export a backup (`.tar.gz`) → deploy OpenClaw on any platform (VPS, Docker, home server) → import the backup there.
+Yes. Go to `/setup` → export a backup (`.zip`) → deploy OpenClaw on any platform (VPS, Docker, home server) → import the backup there.
 
 ---
 
