@@ -87,6 +87,8 @@
         devices: [],
         devicesPending: [],
         devicesPaired: [],
+        gatewayTokenCopied: false,
+        gatewayToken: '',
 
         get currentGroup() {
           return this.authGroups.find(g => g.value === this.selectedGroup);
@@ -113,6 +115,7 @@
             this.configured = j.configured;
             this.openclawVersion = j.openclawVersion || '';
             this.tuiEnabled = j.tuiEnabled || false;
+            this.gatewayToken = j.gatewayToken || '';
             this.status = j.configured ? 'Configured - open /openclaw' : 'Not configured - run setup below';
             this.authGroups = j.authGroups || [];
             if (this.authGroups.length > 0) {
@@ -325,9 +328,6 @@
               this.devicesPending = [];
               this.devicesPaired = [];
             }
-            if (j.raw) {
-              this.log += '[devices] ' + j.raw.trim() + '\n';
-            }
           } catch (e) {
             this.log += '✗ Failed to load devices: ' + String(e) + '\n';
           } finally {
@@ -439,16 +439,8 @@
               </li>
               <li class="flex items-start gap-3">
                 <span class="step-num">4</span>
-                <div class="relative">
-                  <span class="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">If you added a channel
-                    token, click <strong class="text-[var(--color-text-primary)]">Approve Pairing</strong> and enter the
-                    code</span>
-                  <div class="info-tooltip inline-flex ml-1 relative mt-[1px]">i
-                    <div class="info-tooltip-content" style="top: -10px; left: 24px; width: 260px;">After setup, message
-                      your bot on the channel (e.g. send "hey"). It will reply with a pairing code. Enter that code here
-                      to grant DM access. If no code appears, try restarting the bot.</div>
-                  </div>
-                </div>
+                <p class="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">Click <strong
+                    class="text-[var(--color-text-primary)]">Copy Gateway Token</strong></p>
               </li>
               <li class="flex items-start gap-3">
                 <span class="step-num">5</span>
@@ -458,18 +450,41 @@
               <li class="flex items-start gap-3">
                 <span class="step-num">6</span>
                 <div class="relative">
-                  <span class="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">First login? Click
-                    <strong class="text-[var(--color-text-primary)]">Manage Devices</strong> → <strong
-                      class="text-[var(--color-text-primary)]">Approve Latest Request</strong></span>
+                  <span class="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">In the OpenClaw UI, go to
+                    <strong class="text-[var(--color-text-primary)]">Overview</strong> → paste the token in
+                    <strong class="text-[var(--color-text-primary)]">Gateway Token</strong></span>
                   <div class="info-tooltip inline-flex ml-1 relative mt-[1px]">i
-                    <div class="info-tooltip-content" style="top: -24px; left: 24px; width: 260px;">New browsers need a
-                      one-time device approval. After clicking "Open OpenClaw UI", come back here, click "Manage
-                      Devices", and approve the pending request.</div>
+                    <div class="info-tooltip-content" style="top: -10px; left: 24px; width: 260px;">OpenClaw now requires you to manually set the gateway token. In the dashboard, go to Overview and paste your copied token into the Gateway Token field.</div>
                   </div>
                 </div>
               </li>
               <li class="flex items-start gap-3">
                 <span class="step-num">7</span>
+                <div class="relative">
+                  <span class="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">Go to
+                    <strong class="text-[var(--color-text-primary)]">Manage Devices</strong> → <strong
+                      class="text-[var(--color-text-primary)]">Approve</strong> the pairing request</span>
+                  <div class="info-tooltip inline-flex ml-1 relative mt-[1px]">i
+                    <div class="info-tooltip-content" style="top: -24px; left: 24px; width: 260px;">New browsers need a
+                      one-time device approval. After opening the OpenClaw UI, go to Manage Devices and approve the pending request.</div>
+                  </div>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="step-num">8</span>
+                <div class="relative">
+                  <span class="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">If you added a channel
+                    token, click <strong class="text-[var(--color-text-primary)]">Approve Channel Access</strong> and enter the
+                    code</span>
+                  <div class="info-tooltip inline-flex ml-1 relative mt-[1px]">i
+                    <div class="info-tooltip-content" style="top: -10px; left: 24px; width: 260px;">After setup, message
+                      your bot on the channel (e.g. send "hey"). It will reply with a pairing code. Enter that code here
+                      to grant DM access. If no code appears, try restarting the bot.</div>
+                  </div>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="step-num">9</span>
                 <p class="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">You should now see
                   <strong class="text-[var(--color-text-primary)]">Health: OK</strong> in the OpenClaw UI
                 </p>
@@ -664,6 +679,38 @@
                         <p class="text-sm text-[var(--color-text-secondary)]">Your OpenClaw instance is configured and
                           running</p>
                       </div>
+                    </div>
+                  </section>
+
+                  <!-- Gateway Token -->
+                  <section class="card">
+                    <div class="flex items-center gap-3 mb-3">
+                      <div class="w-8 h-8 rounded-full bg-[var(--color-accent)]/15 flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4 text-[var(--color-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 class="text-base font-semibold">Gateway Token</h3>
+                        <p class="text-xs text-[var(--color-text-secondary)]">Required to connect the OpenClaw UI</p>
+                      </div>
+                    </div>
+                    <button
+                      @click="navigator.clipboard.writeText(gatewayToken).then(() => { gatewayTokenCopied = true; setTimeout(() => gatewayTokenCopied = false, 3000); })"
+                      class="btn btn-primary w-full mb-3" id="copy-gateway-token-btn">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                      </svg>
+                      <span x-text="gatewayTokenCopied ? '✓ Copied!' : 'Copy Gateway Token'"></span>
+                    </button>
+                    <div class="bg-[var(--color-surface)] border border-[var(--color-border-muted)] rounded-lg p-3">
+                      <p class="text-xs text-[var(--color-text-secondary)] leading-relaxed">
+                        <strong class="text-[var(--color-warning)]">Next step:</strong>
+                        Open the OpenClaw UI below, then go to <strong class="text-[var(--color-text-primary)]">Overview</strong>
+                        and paste this token in the <strong class="text-[var(--color-text-primary)]">Gateway Token</strong> field.
+                        After that, go to <strong class="text-[var(--color-text-primary)]">Manage Devices</strong> and
+                        approve the pairing request.
+                      </p>
                     </div>
                   </section>
 
