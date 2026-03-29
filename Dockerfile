@@ -12,8 +12,6 @@ RUN apt-get update \
     zip \
   && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g openclaw@v2026.3.24
-
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
