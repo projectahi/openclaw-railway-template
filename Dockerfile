@@ -12,6 +12,8 @@ RUN apt-get update \
     zip \
   && rm -rf /var/lib/apt/lists/*
 
+RUN npm install -g npm@latest
+
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
