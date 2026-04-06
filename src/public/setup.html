@@ -462,11 +462,11 @@
                 <span class="step-num">7</span>
                 <div class="relative">
                   <span class="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">Go to
-                    <strong class="text-[var(--color-text-primary)]">Manage Devices</strong> → <strong
+                    <strong class="text-[var(--color-text-primary)]">Pair Devices</strong> → <strong
                       class="text-[var(--color-text-primary)]">Approve</strong> the pairing request</span>
                   <div class="info-tooltip inline-flex ml-1 relative mt-[1px]">i
                     <div class="info-tooltip-content" style="top: -24px; left: 24px; width: 260px;">New browsers need a
-                      one-time device approval. After opening the OpenClaw UI, go to Manage Devices and approve the pending request.</div>
+                      one-time device approval. After opening the OpenClaw UI, go to Pair Devices and approve the pending request.</div>
                   </div>
                 </div>
               </li>
@@ -708,7 +708,7 @@
                         <strong class="text-[var(--color-warning)]">Next step:</strong>
                         Open the OpenClaw UI below, then go to <strong class="text-[var(--color-text-primary)]">Overview</strong>
                         and paste this token in the <strong class="text-[var(--color-text-primary)]">Gateway Token</strong> field.
-                        After that, go to <strong class="text-[var(--color-text-primary)]">Manage Devices</strong> and
+                        After that, go to <strong class="text-[var(--color-text-primary)]">Pair Devices</strong> and
                         approve the pairing request.
                       </p>
                     </div>
@@ -778,7 +778,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
-                      Manage Devices
+                      Pair Devices
                     </button>
                   </section>
 
@@ -805,7 +805,7 @@
       @click.self="showDevicesModal = false">
       <div class="card w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto !border-[var(--color-border)]">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold">Manage Devices</h3>
+          <h3 class="text-lg font-semibold">Pair Devices</h3>
           <div class="flex items-center gap-2">
             <button @click="loadDevices()" :disabled="devicesLoading"
               class="p-2 rounded-lg hover:bg-[var(--color-surface-overlay)] text-[var(--color-text-secondary)] transition-colors">
