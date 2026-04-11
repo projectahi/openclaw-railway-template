@@ -1,3 +1,26 @@
+# ⚠️ AHI fork notes (read this first)
+
+This is a Project AHI fork of [praveen-ks-2001/openclaw-railway-template-new](https://github.com/praveen-ks-2001/openclaw-railway-template-new).
+
+**What we changed vs upstream:**
+
+1. **Claude Code CLI installed in the image** (`Dockerfile`) — `npm install -g @anthropic-ai/claude-code` so OpenClaw's built-in `coding-agent` skill can spawn `claude --print` workers in parallel on git worktrees. This is the delegation backend for the AHI PM agent. Rationale: [`best-practices/12-parallel-coding-delegation.md`](https://github.com/projectahi/ahi-pm-workspace) in the ahi-PM repo.
+
+2. **Workspace auto-sync on container boot** (`entrypoint.sh`) — if `AHI_WORKSPACE_REPO` and `GITHUB_TOKEN` env vars are set, the container clones (first boot) or pulls (subsequent boots) the workspace repo into `/data/workspace`. Defaults: `AHI_WORKSPACE_REPO=projectahi/ahi-pm-workspace`. This makes "edit SOUL.md locally → git push → container auto-syncs" the day-to-day workflow. Runtime state in `.openclaw/`, `state/`, `memory/` is preserved across syncs.
+
+**Required Railway variables (beyond the upstream template):**
+
+```
+GITHUB_TOKEN           # PAT with repo:read on the workspace repo
+AHI_WORKSPACE_REPO     # e.g. "projectahi/ahi-pm-workspace"
+ANTHROPIC_API_KEY      # Claude API key (used by both OpenClaw itself and Claude Code CLI)
+DISCORD_BOT_TOKEN      # Discord bot token (if using Discord channel)
+```
+
+**Everything below is the upstream README**, unchanged except for this notice.
+
+---
+
 ![OpenCrawl Logo](https://res.cloudinary.com/asset-cloudinary/image/upload/v1769907898/openclaw-logo-text_w3qcgl.avif)
 
 

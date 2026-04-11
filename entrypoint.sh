@@ -24,4 +24,55 @@ fi
 rm -rf /home/linuxbrew/.linuxbrew
 ln -sfn /data/.linuxbrew /home/linuxbrew/.linuxbrew
 
+# -----------------------------------------------------------------------------
+# AHI: workspace bootstrap / auto-sync
+# -----------------------------------------------------------------------------
+# On first boot, clone $AHI_WORKSPACE_REPO (e.g. "projectahi/ahi-pm-workspace")
+# into $OPENCLAW_WORKSPACE_DIR. On subsequent boots, fast-forward pull to pick
+# up any git-committed workspace changes.
+#
+# Requires Railway env vars:
+#   GITHUB_TOKEN         - PAT with repo:read on the workspace repo
+#   AHI_WORKSPACE_REPO   - "owner/repo" form, e.g. "projectahi/ahi-pm-workspace"
+#
+# If either is unset, this block is a no-op and OpenClaw uses whatever files
+# are already on /data/workspace (or its internal defaults).
+# -----------------------------------------------------------------------------
+WORKSPACE_DIR="${OPENCLAW_WORKSPACE_DIR:-/data/workspace}"
+if [ -n "${AHI_WORKSPACE_REPO:-}" ] && [ -n "${GITHUB_TOKEN:-}" ]; then
+  CLONE_URL="https://${GITHUB_TOKEN}@github.com/${AHI_WORKSPACE_REPO}.git"
+  if [ -d "${WORKSPACE_DIR}/.git" ] && git -C "${WORKSPACE_DIR}" remote get-url origin >/dev/null 2>&1; then
+    # Existing git repo, pull latest
+    echo "[bootstrap] Updating workspace from ${AHI_WORKSPACE_REPO}"
+    (
+      cd "${WORKSPACE_DIR}" && \
+      git remote set-url origin "${CLONE_URL}" && \
+      git fetch --depth 1 origin main && \
+      git reset --hard origin/main
+    ) || echo "[bootstrap] WARN: workspace update failed, continuing with existing files"
+  else
+    # Fresh boot, empty volume, or non-git workspace — clone into temp and merge
+    echo "[bootstrap] Cloning workspace from ${AHI_WORKSPACE_REPO} (first boot)"
+    TMP_CLONE=$(mktemp -d /tmp/workspace-clone.XXXXXX)
+    if git clone --depth 1 "${CLONE_URL}" "${TMP_CLONE}"; then
+      # Preserve any OpenClaw-created runtime state that the clone doesn't ship
+      [ -d "${WORKSPACE_DIR}/.openclaw" ] && cp -a "${WORKSPACE_DIR}/.openclaw" "${TMP_CLONE}/" 2>/dev/null || true
+      [ -d "${WORKSPACE_DIR}/state" ]     && cp -a "${WORKSPACE_DIR}/state"     "${TMP_CLONE}/" 2>/dev/null || true
+      if [ -d "${WORKSPACE_DIR}/memory" ]; then
+        mkdir -p "${TMP_CLONE}/memory"
+        cp -a "${WORKSPACE_DIR}/memory/." "${TMP_CLONE}/memory/" 2>/dev/null || true
+      fi
+      rm -rf "${WORKSPACE_DIR}"
+      mv "${TMP_CLONE}" "${WORKSPACE_DIR}"
+      echo "[bootstrap] Workspace ready at ${WORKSPACE_DIR}"
+    else
+      echo "[bootstrap] WARN: git clone failed, falling back to existing workspace"
+      rm -rf "${TMP_CLONE}"
+    fi
+  fi
+  chown -R openclaw:openclaw "${WORKSPACE_DIR}" 2>/dev/null || true
+else
+  echo "[bootstrap] SKIP workspace sync: AHI_WORKSPACE_REPO or GITHUB_TOKEN not set"
+fi
+
 exec gosu openclaw node src/server.js

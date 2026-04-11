@@ -21,6 +21,11 @@ COPY src ./src
 COPY entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
 
+# AHI: install Claude Code CLI so OpenClaw's built-in `coding-agent` skill can
+# spawn `claude --print` workers in parallel on git worktrees. See
+# best-practices/12-parallel-coding-delegation.md in the ahi-PM repo for why
+# this is the delegation backend (instead of Kilo CLI).
+RUN npm install -g @anthropic-ai/claude-code
 
 RUN useradd -m -s /bin/bash openclaw \
   && chown -R openclaw:openclaw /app \
