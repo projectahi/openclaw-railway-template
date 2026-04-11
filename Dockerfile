@@ -19,7 +19,8 @@ RUN corepack enable && pnpm install --frozen-lockfile --prod
 
 COPY src ./src
 COPY entrypoint.sh ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
+COPY scripts ./scripts
+RUN chmod +x ./entrypoint.sh ./scripts/workspace-sync.sh
 
 # AHI: install Claude Code CLI so OpenClaw's built-in `coding-agent` skill can
 # spawn `claude --print` workers in parallel on git worktrees. See

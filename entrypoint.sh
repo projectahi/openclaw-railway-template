@@ -75,4 +75,20 @@ else
   echo "[bootstrap] SKIP workspace sync: AHI_WORKSPACE_REPO or GITHUB_TOKEN not set"
 fi
 
+# -----------------------------------------------------------------------------
+# AHI: install workspace-sync.sh into /data/.openclaw/scripts/
+# -----------------------------------------------------------------------------
+# HEARTBEAT.md calls this script every heartbeat for bidirectional git sync.
+# It lives in the image at /app/scripts/ and is copied into the volume path
+# /data/.openclaw/scripts/ so the agent can invoke it at a stable location.
+# -----------------------------------------------------------------------------
+STATE_DIR="${OPENCLAW_STATE_DIR:-/data/.openclaw}"
+mkdir -p "${STATE_DIR}/scripts"
+if [ -f /app/scripts/workspace-sync.sh ]; then
+  cp /app/scripts/workspace-sync.sh "${STATE_DIR}/scripts/workspace-sync.sh"
+  chmod +x "${STATE_DIR}/scripts/workspace-sync.sh"
+  echo "[bootstrap] Installed workspace-sync.sh to ${STATE_DIR}/scripts/"
+fi
+chown -R openclaw:openclaw "${STATE_DIR}" 2>/dev/null || true
+
 exec gosu openclaw node src/server.js
