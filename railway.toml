@@ -8,5 +8,3 @@ restartPolicyType = "on_failure"
 
 [variables]
 PORT = "8080"
-# auto-deploy trigger 1776041061
-# auto-deploy trigger 1776041065
