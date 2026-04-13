@@ -17,6 +17,10 @@ fi
 chown -R openclaw:openclaw /data
 chmod 700 /data
 
+# Mark all /data repos as safe so root-run git commands don't fail with
+# "dubious ownership" after the chown above makes everything openclaw-owned.
+git config --global --add safe.directory '*'
+
 if [ ! -d /data/.linuxbrew ]; then
   cp -a /home/linuxbrew/.linuxbrew /data/.linuxbrew
 fi
