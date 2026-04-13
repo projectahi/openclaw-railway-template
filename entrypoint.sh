@@ -76,6 +76,40 @@ else
 fi
 
 # -----------------------------------------------------------------------------
+# AHI: clone code repos to /data/repos/<name>/
+# -----------------------------------------------------------------------------
+# Clones (or updates) each repo listed in $AHI_CODE_REPOS. These are reference
+# clones for the PM agent to browse code and for coding workers to create
+# worktrees from. Separate from /data/workspace to avoid polluting workspace sync.
+# -----------------------------------------------------------------------------
+if [ -n "${AHI_CODE_REPOS:-}" ] && [ -n "${GITHUB_TOKEN:-}" ]; then
+  mkdir -p /data/repos
+  for REPO in ${AHI_CODE_REPOS}; do
+    REPO_NAME=$(basename "$REPO")
+    REPO_DIR="/data/repos/${REPO_NAME}"
+    CLONE_URL="https://${GITHUB_TOKEN}@github.com/${REPO}.git"
+    if [ -d "${REPO_DIR}/.git" ]; then
+      echo "[bootstrap] Updating code repo ${REPO}"
+      git -C "${REPO_DIR}" remote set-url origin "${CLONE_URL}" 2>/dev/null
+      git -C "${REPO_DIR}" fetch --depth 1 origin main 2>/dev/null && \
+        git -C "${REPO_DIR}" reset --hard origin/main 2>/dev/null || \
+        echo "[bootstrap] WARN: update failed for ${REPO}, continuing"
+    else
+      echo "[bootstrap] Cloning code repo ${REPO}"
+      git clone --depth 1 "${CLONE_URL}" "${REPO_DIR}" || \
+        echo "[bootstrap] WARN: clone failed for ${REPO}, skipping"
+    fi
+  done
+  chown -R openclaw:openclaw /data/repos 2>/dev/null || true
+else
+  echo "[bootstrap] SKIP code repo clone: AHI_CODE_REPOS or GITHUB_TOKEN not set"
+fi
+
+# Worktree directory for coding workers (outside workspace and repos)
+mkdir -p /data/worktrees
+chown openclaw:openclaw /data/worktrees 2>/dev/null || true
+
+# -----------------------------------------------------------------------------
 # AHI: install workspace-sync.sh into /data/.openclaw/scripts/
 # -----------------------------------------------------------------------------
 # HEARTBEAT.md calls this script every heartbeat for bidirectional git sync.
@@ -90,5 +124,13 @@ if [ -f /app/scripts/workspace-sync.sh ]; then
   echo "[bootstrap] Installed workspace-sync.sh to ${STATE_DIR}/scripts/"
 fi
 chown -R openclaw:openclaw "${STATE_DIR}" 2>/dev/null || true
+
+# -----------------------------------------------------------------------------
+# AHI: authenticate gh CLI so the agent can check PRs, CI, and create PRs
+# -----------------------------------------------------------------------------
+if [ -n "${GITHUB_TOKEN:-}" ]; then
+  echo "${GITHUB_TOKEN}" | gosu openclaw gh auth login --with-token 2>/dev/null || \
+    echo "[bootstrap] WARN: gh auth login failed"
+fi
 
 exec gosu openclaw node src/server.js
