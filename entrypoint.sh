@@ -126,9 +126,18 @@ fi
 chown -R openclaw:openclaw "${STATE_DIR}" 2>/dev/null || true
 
 # -----------------------------------------------------------------------------
-# AHI: authenticate gh CLI so the agent can check PRs, CI, and create PRs
+# AHI: install gh CLI if not present, then authenticate
 # -----------------------------------------------------------------------------
-if [ -n "${GITHUB_TOKEN:-}" ]; then
+if ! command -v gh &>/dev/null; then
+  echo "[bootstrap] Installing gh CLI..."
+  GH_VERSION="2.65.0"
+  curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz" \
+    | tar xz -C /tmp && cp "/tmp/gh_${GH_VERSION}_linux_amd64/bin/gh" /usr/local/bin/gh \
+    && chmod +x /usr/local/bin/gh && rm -rf "/tmp/gh_${GH_VERSION}_linux_amd64" \
+    && echo "[bootstrap] gh $(gh --version | head -1) installed" \
+    || echo "[bootstrap] WARN: gh install failed"
+fi
+if [ -n "${GITHUB_TOKEN:-}" ] && command -v gh &>/dev/null; then
   echo "${GITHUB_TOKEN}" | gosu openclaw gh auth login --with-token 2>/dev/null || \
     echo "[bootstrap] WARN: gh auth login failed"
 fi
