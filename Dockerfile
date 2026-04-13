@@ -18,7 +18,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN corepack enable && pnpm install --frozen-lockfile --prod
 
 COPY src ./src
-# bust cache: code repo cloning added 2026-04-12
+ARG CACHEBUST=2026-04-13a
 COPY entrypoint.sh ./entrypoint.sh
 COPY scripts ./scripts
 RUN chmod +x ./entrypoint.sh ./scripts/workspace-sync.sh
