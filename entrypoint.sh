@@ -88,17 +88,20 @@ if [ -n "${AHI_CODE_REPOS:-}" ] && [ -n "${GITHUB_TOKEN:-}" ]; then
     REPO_NAME=$(basename "$REPO")
     REPO_DIR="/data/repos/${REPO_NAME}"
     CLONE_URL="https://${GITHUB_TOKEN}@github.com/${REPO}.git"
-    if [ -d "${REPO_DIR}/.git" ]; then
-      echo "[bootstrap] Updating code repo ${REPO}"
-      git -C "${REPO_DIR}" remote set-url origin "${CLONE_URL}" 2>/dev/null
-      git -C "${REPO_DIR}" fetch --depth 1 origin main 2>/dev/null && \
-        git -C "${REPO_DIR}" reset --hard origin/main 2>/dev/null || \
-        echo "[bootstrap] WARN: update failed for ${REPO}, continuing"
-    else
-      echo "[bootstrap] Cloning code repo ${REPO}"
-      git clone --depth 1 "${CLONE_URL}" "${REPO_DIR}" || \
-        echo "[bootstrap] WARN: clone failed for ${REPO}, skipping"
-    fi
+    (
+      set +e
+      if [ -d "${REPO_DIR}/.git" ]; then
+        echo "[bootstrap] Updating code repo ${REPO}"
+        git -C "${REPO_DIR}" remote set-url origin "${CLONE_URL}"
+        git -C "${REPO_DIR}" fetch --depth 1 origin main && \
+          git -C "${REPO_DIR}" reset --hard origin/main || \
+          echo "[bootstrap] WARN: update failed for ${REPO}, continuing"
+      else
+        echo "[bootstrap] Cloning code repo ${REPO}"
+        git clone --depth 1 "${CLONE_URL}" "${REPO_DIR}" || \
+          echo "[bootstrap] WARN: clone failed for ${REPO}, skipping"
+      fi
+    )
   done
   chown -R openclaw:openclaw /data/repos 2>/dev/null || true
 else
