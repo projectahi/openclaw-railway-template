@@ -42,14 +42,20 @@ WORKSPACE_DIR="${OPENCLAW_WORKSPACE_DIR:-/data/workspace}"
 if [ -n "${AHI_WORKSPACE_REPO:-}" ] && [ -n "${GITHUB_TOKEN:-}" ]; then
   CLONE_URL="https://${GITHUB_TOKEN}@github.com/${AHI_WORKSPACE_REPO}.git"
   if [ -d "${WORKSPACE_DIR}/.git" ] && git -C "${WORKSPACE_DIR}" remote get-url origin >/dev/null 2>&1; then
-    # Existing git repo, pull latest
+    # Existing git repo — fast-forward merge to pick up operator pushes
+    # without clobbering agent-written files (IDENTITY.md, tasks/, memory/).
+    # Falls back to hard reset only if merge fails (conflict = operator wins).
     echo "[bootstrap] Updating workspace from ${AHI_WORKSPACE_REPO}"
     (
       cd "${WORKSPACE_DIR}" && \
       git remote set-url origin "${CLONE_URL}" && \
       git fetch --depth 1 origin main && \
-      git reset --hard origin/main
-    ) || echo "[bootstrap] WARN: workspace update failed, continuing with existing files"
+      git merge --ff origin/main
+    ) || {
+      echo "[bootstrap] WARN: fast-forward failed, falling back to hard reset"
+      ( cd "${WORKSPACE_DIR}" && git reset --hard origin/main ) || \
+        echo "[bootstrap] WARN: workspace update failed, continuing with existing files"
+    }
   else
     # Fresh boot, empty volume, or non-git workspace — clone into temp and merge
     echo "[bootstrap] Cloning workspace from ${AHI_WORKSPACE_REPO} (first boot)"
